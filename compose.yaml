@@ -1,0 +1,91 @@
+version: "3.8"
+
+services:
+  mc:
+    image: docker.io/itzg/minecraft-server:2024.3.0-java17
+    ports:
+      - "25565:25565"
+    expose:
+      - 25565
+    stop_grace_period: 70s
+    environment:
+      EULA: "true"
+      MOD_PLATFORM: AUTO_CURSEFORGE
+      # allocate from https://console.curseforge.com/ and set in .env file
+      CF_API_KEY: "${CF_API_KEY}"
+      CF_PAGE_URL: "https://www.curseforge.com/minecraft/modpacks/all-the-mods-9-no-frills"
+      # Optional: select a specific version/file
+      #CF_FILENAME_MATCHER: "0.2.34"
+      MEMORY: 12G
+
+      MOTD: Welcome to Arkitectonas Anonymus
+      SERVER_NAME: Arkitectonas Anonymus
+      SNOOPER_ENABLED: "false"
+      SEED: "490174442"
+
+      ALLOW_FLIGHT: "true"
+
+      EXISTING_WHITELIST_FILE: MERGE
+      WHITELIST: |
+        antdking
+
+      OPS: |
+        antdking
+    volumes:
+      - ./data-atm:/data
+      - ./downloads:/downloads
+    #network_mode: 'slirp4netns:enable_ipv6=true'
+    networks:
+      internal:
+        # hack as playit doesn't support alias/hostname lookups
+        ipv4_address: "172.16.238.10"
+
+  playit:
+    build:
+      dockerfile: playit.Containerfile
+    command:
+      - dumb-init
+      - playit
+      - '--secret_path'
+      - /run/secrets/playit-secret-key-file
+      - '--secret_wait'
+      - run
+      - "${PLAYIT_TUNNEL_ID}=172.16.238.10:25565"
+    user: 10001
+    secrets:
+      - playit-secret-key-file
+    depends_on:
+      mc:
+        condition: service_started
+    networks:
+      - external
+      - internal
+
+  pinger:
+    build:
+      context: pinger
+      dockerfile: Containerfile
+    user: 10001
+    environment:
+      MC_SERVER_ADDR: "${MC_SERVER_ADDR}"
+    networks:
+      - external
+    depends_on:
+      mc:
+        condition: service_healthy
+        restart: true
+      playit:
+        condition: service_started
+
+secrets:
+  playit-secret-key-file:
+    file: ./playit-secret.toml
+
+networks:
+  #external: {}
+  internal:
+    ipam:
+      config:
+        - subnet: "172.16.238.0/24"
+        #- subnet: "2001:3984:3989::/64"
+  external: {}
