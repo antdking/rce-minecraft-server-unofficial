@@ -7,6 +7,7 @@ services:
       - "25565:25565"
     expose:
       - 25565
+      - 25575
     stop_grace_period: 70s
     environment:
       EULA: "true"
@@ -24,6 +25,9 @@ services:
       SEED: "490174442"
 
       ALLOW_FLIGHT: "true"
+
+      RCON_PASSWORD: "${MC_RCON_PASSWORD}"
+      BROADCAST_RCON_TO_OPS: "true"
 
       EXISTING_WHITELIST_FILE: MERGE
       WHITELIST: |
@@ -61,21 +65,36 @@ services:
       - external
       - internal
 
-  pinger:
+  mng-api:
     build:
-      context: pinger
+      context: mng-api
       dockerfile: Containerfile
     user: 10001
     environment:
-      MC_SERVER_ADDR: "${MC_SERVER_ADDR}"
+      MC_SERVER_ADDR_INTERNAL: "mc:25565"
+      MC_SERVER_ADDR_EXTERNAL: "${MC_SERVER_ADDR_EXTERNAL}"
+      MC_RCON_ADDRESS: "mc"
+      MC_RCON_PORT: "25575"
+      MC_RCON_PASSWORD: "${MC_RCON_PASSWORD:-}"
+      RCE_API_TOKEN: "${$RCE_API_TOKEN}"
     networks:
-      - external
+      - internal
+    expose:
+      - 5000
+
+  cloudflared:
+    image: docker.io/cloudflare/cloudflared:2024.3.0
+    command:
+      - tunnel
+      - --no-autoupdate
+      - run
+    environment:
+      TUNNEL_TOKEN: "${CLOUDFLARE_TUNNEL_TOKEN}"
+    networks:
+      - internal
     depends_on:
-      mc:
-        condition: service_healthy
-        restart: true
-      playit:
-        condition: service_started
+      - mng-api
+
 
 secrets:
   playit-secret-key-file:
