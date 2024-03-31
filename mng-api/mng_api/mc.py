@@ -1,6 +1,7 @@
 from mcstatus import JavaServer
 import asyncio
 import rcon.source
+import traceback
 
 from datetime import datetime, UTC
 
@@ -39,6 +40,10 @@ class StatusCheckLoop:
                 keep_running = False
             except asyncio.TimeoutError:
                 self.status_failing = True
+            except Exception as e:
+                self.status_failing = True
+                print(f"Unknown exception: {e}")
+                traceback.print_exc()
             await asyncio.sleep(self._frequency)
 
     def is_reachable(self) -> bool:
