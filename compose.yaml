@@ -1,4 +1,4 @@
-version: "3.8"
+# NOTE: dependencies are not used here as it makes managing individual containers awkward with podman
 
 services:
   mc:
@@ -58,9 +58,9 @@ services:
     user: 10001
     secrets:
       - playit-secret-key-file
-    depends_on:
-      mc:
-        condition: service_started
+    #depends_on:
+    #  mc:
+    #    condition: service_started
     networks:
       - external
       - internal
@@ -92,8 +92,8 @@ services:
       TUNNEL_TOKEN: "${CLOUDFLARE_TUNNEL_TOKEN}"
     networks:
       - internal
-    depends_on:
-      - mng-api
+    #depends_on:
+    #  - mng-api
 
 
 secrets:

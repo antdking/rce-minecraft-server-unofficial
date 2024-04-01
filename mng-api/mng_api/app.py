@@ -12,7 +12,7 @@ MC_ADDRESS_EXTERNAL = os.environ.get("MC_SERVER_ADDR_EXTERNAL") or ""
 MC_RCON_ADDRESS = os.environ.get("MC_RCON_ADDRESS") or ""
 MC_RCON_PORT = os.environ.get("MC_RCON_PORT") or 25575
 MC_RCON_PASSWORD = os.environ.get("MC_RCON_PASSWORD") or None
-API_KEY = os.environ["API_KEY"]
+RCE_API_TOKEN = os.environ["RCE_API_TOKEN"]
 
 mc_internal_healthcheck = mc.StatusCheckLoop(MC_ADDRESS_INTERNAL)
 mc_external_healthcheck = mc.StatusCheckLoop(MC_ADDRESS_EXTERNAL)
@@ -36,7 +36,7 @@ security = APIKeyHeader(name="x-api-key")
 
 
 def require_api_key(token: str = fastapi.Depends(security)) -> bool:
-    if not secrets.compare_digest(token, API_KEY):
+    if not secrets.compare_digest(token, RCE_API_TOKEN):
         raise fastapi.HTTPException(status_code=403, detail="Invalid API Key")
     return True
 
@@ -71,7 +71,7 @@ async def healthz_full():
 
 @app.post("/allow")
 async def allowlist(username: str):
-    client = mc.RconClient(MC_ADDRESS_INTERNAL, 25575, password=MC_RCON_PASSWORD)
+    client = mc.RconClient(MC_RCON_ADDRESS, 25575, password=MC_RCON_PASSWORD)
     result = await client.allow_user(username)
     return {
         "success": result,
@@ -80,7 +80,7 @@ async def allowlist(username: str):
 
 @app.post("/remove")
 async def remove_user(username: str):
-    client = mc.RconClient(MC_ADDRESS_INTERNAL, 25575, password=MC_RCON_PASSWORD)
+    client = mc.RconClient(MC_RCON_ADDRESS, 25575, password=MC_RCON_PASSWORD)
     result = await client.remove_user(username)
     return {
         "success": result,
