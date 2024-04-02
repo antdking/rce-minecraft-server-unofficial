@@ -76,7 +76,7 @@ services:
       MC_RCON_ADDRESS: "mc"
       MC_RCON_PORT: "25575"
       MC_RCON_PASSWORD: "${MC_RCON_PASSWORD:-}"
-      RCE_API_TOKEN: "${$RCE_API_TOKEN}"
+      RCE_API_TOKEN: "${RCE_API_TOKEN}"
     networks:
       - internal
     expose:

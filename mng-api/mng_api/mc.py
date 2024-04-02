@@ -27,18 +27,19 @@ class StatusCheckLoop:
 
     async def start(self):
         assert self._address, "No address provided, can't begin loop"
-        server = JavaServer.lookup(self._address)
+        server = await JavaServer.async_lookup(self._address)
         keep_running = True
         while keep_running:
             try:
-                status = await server.async_status()
+                # use sync status check, to avoid latency being picked up from coroutine overhead
+                status = server.status()
                 self.status_failing = False
                 self.last_check = datetime.now(UTC)
                 self.online_users = [p.name for p in (status.players.sample or [])]
                 self.latency = round(status.latency)
             except asyncio.CancelledError:
                 keep_running = False
-            except asyncio.TimeoutError:
+            except (TimeoutError, asyncio.TimeoutError):
                 self.status_failing = True
             except Exception as e:
                 self.status_failing = True
