@@ -7,3 +7,6 @@ playit-secret.toml
 data
 data-atm
 downloads
+
+.vscode
+kubejs
