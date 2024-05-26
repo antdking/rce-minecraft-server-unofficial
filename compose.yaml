@@ -58,6 +58,17 @@ services:
       - '--secret_wait'
       - run
       - "${PLAYIT_TUNNEL_ID}=172.16.238.10:25565"
+    environment:
+      MC_SERVER_ADDR_EXTERNAL: "${MC_SERVER_ADDR_EXTERNAL}"
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, python3, /app/playit_healthcheck.py]
+      timeout: 4s
+      interval: 10s
+      # this means try twice before failing, not once.
+      retries: 1
+      # normally we'd use a dependency, but podman doesn't handle dependent services very well
+      start_period: 60s
     user: 10001
     secrets:
       - playit-secret-key-file
