@@ -18,6 +18,9 @@ services:
       # Optional: select a specific version/file
       #CF_FILENAME_MATCHER: "0.2.34"
       MEMORY: 12G
+      USE_AIKAR_FLAGS: "true"
+      # reduce load for lower memory clients
+      SIMULATION_DISTANCE: "5"
 
       MOTD: Welcome to Arkitectonas Anonymus
       SERVER_NAME: Arkitectonas Anonymus
@@ -103,8 +106,10 @@ secrets:
 networks:
   #external: {}
   internal:
+    enable_ipv6: false
     ipam:
       config:
         - subnet: "172.16.238.0/24"
         #- subnet: "2001:3984:3989::/64"
-  external: {}
+  external:
+    enable_ipv6: false

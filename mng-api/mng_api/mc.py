@@ -39,7 +39,7 @@ class StatusCheckLoop:
                 self.latency = round(status.latency)
             except asyncio.CancelledError:
                 keep_running = False
-            except (TimeoutError, asyncio.TimeoutError):
+            except (ConnectionRefusedError, TimeoutError, asyncio.TimeoutError):
                 self.status_failing = True
             except Exception as e:
                 self.status_failing = True
@@ -63,13 +63,19 @@ class RconClient:
     async def allow_user(self, username: str) -> bool:
         assert " " not in username, "Username cannot contain spaces"
         with self._client() as client:
-            response = client.run("whitelist", "add", username)
-        return response.startswith("Added") and response.endswith("to the whitelist")
+            response = client.run("whitelist", "add", username).strip()
+        print("rcon allow:", response)
+        return (
+            response.startswith("Added") and response.endswith("to the whitelist")
+            or response == "Player is already whitelisted"
+        )
 
     async def remove_user(self, username: str) -> bool:
         assert " " not in username, "Username cannot contain spaces"
         with self._client() as client:
-            response = client.run("whitelist", "remove", username)
-        return response.startswith("Removed") and response.endswith(
-            "from the whitelist"
+            response = client.run("whitelist", "remove", username).strip()
+        print("rcon remove:", response)
+        return (
+            response.startswith("Removed") and response.endswith("from the whitelist")
+            or response == "Player is not whitelisted"
         )
