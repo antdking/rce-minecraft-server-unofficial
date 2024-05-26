@@ -68,7 +68,7 @@ services:
       # this means try twice before failing, not once.
       retries: 1
       # normally we'd use a dependency, but podman doesn't handle dependent services very well
-      start_period: 60s
+      start_period: 70s
     user: 10001
     secrets:
       - playit-secret-key-file
@@ -91,6 +91,8 @@ services:
       MC_RCON_PORT: "25575"
       MC_RCON_PASSWORD: "${MC_RCON_PASSWORD:-}"
       RCE_API_TOKEN: "${RCE_API_TOKEN}"
+    healthcheck:
+      disable: true
     networks:
       - internal
     expose:
@@ -104,6 +106,8 @@ services:
       - run
     environment:
       TUNNEL_TOKEN: "${CLOUDFLARE_TUNNEL_TOKEN}"
+    healthcheck:
+      disable: true
     networks:
       - internal
     #depends_on:
