@@ -2,7 +2,7 @@
 
 services:
   mc:
-    image: docker.io/itzg/minecraft-server:2024.3.0-java17
+    image: docker.io/itzg/minecraft-server:2024.5.0-java17
     ports:
       - "25565:25565"
     expose:
@@ -86,7 +86,7 @@ services:
       - 5000
 
   cloudflared:
-    image: docker.io/cloudflare/cloudflared:2024.3.0
+    image: docker.io/cloudflare/cloudflared:2024.5.0
     command:
       - tunnel
       - --no-autoupdate
