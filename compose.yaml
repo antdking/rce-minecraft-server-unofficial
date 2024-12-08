@@ -63,10 +63,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: [CMD, python3, /app/playit_healthcheck.py]
-      timeout: 4s
+      timeout: 6s
       interval: 10s
       # this means try twice before failing, not once.
-      retries: 1
+      retries: 2
       # normally we'd use a dependency, but podman doesn't handle dependent services very well
       start_period: 70s
     user: 10001
@@ -121,10 +121,10 @@ secrets:
 networks:
   #external: {}
   internal:
-    enable_ipv6: false
+    enable_ipv6: true
     ipam:
       config:
         - subnet: "172.16.238.0/24"
         #- subnet: "2001:3984:3989::/64"
   external:
-    enable_ipv6: false
+    enable_ipv6: true
