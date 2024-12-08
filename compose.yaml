@@ -2,7 +2,7 @@
 
 services:
   mc:
-    image: docker.io/itzg/minecraft-server:2024.5.0-java17
+    image: docker.io/itzg/minecraft-server:2024.10.2-java21
     ports:
       - "25565:25565"
     expose:
@@ -14,7 +14,7 @@ services:
       MOD_PLATFORM: AUTO_CURSEFORGE
       # allocate from https://console.curseforge.com/ and set in .env file
       CF_API_KEY: "${CF_API_KEY}"
-      CF_PAGE_URL: "https://www.curseforge.com/minecraft/modpacks/all-the-mods-9-no-frills"
+      CF_PAGE_URL: "https://www.curseforge.com/minecraft/modpacks/hephaistos"
       # Optional: select a specific version/file
       #CF_FILENAME_MATCHER: "0.2.34"
       MEMORY: 12G
@@ -42,42 +42,42 @@ services:
       - ./data-atm:/data
       - ./downloads:/downloads
     #network_mode: 'slirp4netns:enable_ipv6=true'
-    networks:
-      internal:
-        # hack as playit doesn't support alias/hostname lookups
-        ipv4_address: "172.16.238.10"
+    #networks:
+    #  internal:
+    #    # hack as playit doesn't support alias/hostname lookups
+    #    ipv4_address: "172.16.238.10"
 
-  playit:
-    build:
-      dockerfile: playit.Containerfile
-    command:
-      - dumb-init
-      - playit
-      - '--secret_path'
-      - /run/secrets/playit-secret-key-file
-      - '--secret_wait'
-      - run
-      - "${PLAYIT_TUNNEL_ID}=172.16.238.10:25565"
-    environment:
-      MC_SERVER_ADDR_EXTERNAL: "${MC_SERVER_ADDR_EXTERNAL}"
-    restart: unless-stopped
-    healthcheck:
-      test: [CMD, python3, /app/playit_healthcheck.py]
-      timeout: 6s
-      interval: 10s
-      # this means try twice before failing, not once.
-      retries: 2
-      # normally we'd use a dependency, but podman doesn't handle dependent services very well
-      start_period: 70s
-    user: 10001
-    secrets:
-      - playit-secret-key-file
-    #depends_on:
-    #  mc:
-    #    condition: service_started
-    networks:
-      - external
-      - internal
+  # playit:
+  #   build:
+  #     dockerfile: playit.Containerfile
+  #   command:
+  #     - dumb-init
+  #     - playit
+  #     - '--secret_path'
+  #     - /run/secrets/playit-secret-key-file
+  #     - '--secret_wait'
+  #     - run
+  #     - "${PLAYIT_TUNNEL_ID}=172.16.238.10:25565"
+  #   environment:
+  #     MC_SERVER_ADDR_EXTERNAL: "${MC_SERVER_ADDR_EXTERNAL}"
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: [CMD, python3, /app/playit_healthcheck.py]
+  #     timeout: 6s
+  #     interval: 10s
+  #     # this means try twice before failing, not once.
+  #     retries: 2
+  #     # normally we'd use a dependency, but podman doesn't handle dependent services very well
+  #     start_period: 70s
+  #   user: 10001
+  #   secrets:
+  #     - playit-secret-key-file
+  #   #depends_on:
+  #   #  mc:
+  #   #    condition: service_started
+  #   networks:
+  #     - external
+  #     - internal
 
   mng-api:
     build:
@@ -99,7 +99,7 @@ services:
       - 5000
 
   cloudflared:
-    image: docker.io/cloudflare/cloudflared:2024.5.0
+    image: docker.io/cloudflare/cloudflared:2024.11.1
     command:
       - tunnel
       - --no-autoupdate
@@ -114,17 +114,17 @@ services:
     #  - mng-api
 
 
-secrets:
-  playit-secret-key-file:
-    file: ./playit-secret.toml
+# secrets:
+#   playit-secret-key-file:
+#     file: ./playit-secret.toml
 
 networks:
   #external: {}
   internal:
     enable_ipv6: true
-    ipam:
-      config:
-        - subnet: "172.16.238.0/24"
-        #- subnet: "2001:3984:3989::/64"
+    # ipam:
+    #   config:
+    #     - subnet: "172.16.238.0/24"
+    #     #- subnet: "2001:3984:3989::/64"
   external:
     enable_ipv6: true
